@@ -48,7 +48,7 @@ public class Simulator {
         scanner.close();
     }
 
-    public void printState(stateStruct state) {
+    private void printState(stateStruct state) {
         IO.println("");
         IO.println("@@@");
         IO.println("state:");
@@ -115,16 +115,24 @@ public class Simulator {
 
         switch (opcode) {
             case 0: //add
-                state.register[D] = state.register[A] + state.register[B];
+                int result = state.register[A] + state.register[B];
+                if(D != 0) {
+                    state.register[D] = result;
+                }
                 state.pc++;
                 break;
             case 1: //nand
-                state.register[D] = ~(state.register[A] & state.register[B]);
+                result = ~(state.register[A] & state.register[B]);
+                if(D != 0) {
+                    state.register[D] = result;
+                }
                 state.pc++;
                 break;
             case 2: //lw
                 int address = state.register[A] + offset;
-                state.register[B] = state.memory[address];
+                if(B != 0) {
+                    state.register[B] = state.memory[address];
+                }
                 state.pc++;
                 break;
             case 3 : //sw
@@ -141,7 +149,9 @@ public class Simulator {
                 int nextpc = state.pc + 1;
                 int target = state.register[A];
 
-                state.register[B] = nextpc;
+                if(B != 0) {
+                    state.register[B] = nextpc;
+                }
                 state.pc = target;
                 break;
             case 6 : // halt
