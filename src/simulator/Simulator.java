@@ -6,7 +6,11 @@ import java.util.Scanner;
 
 public class Simulator {
 
-    public void run(String filename, MachineState state) {
+    private boolean halted = false;
+    private int countIntruction = 0;
+
+    public void run(String filename, stateStruct state) {
+
         try {
             ReadMachinecode(filename,state);
         } catch (FileNotFoundException e) {
@@ -18,18 +22,18 @@ public class Simulator {
         }
         IO.println();
 
-        while(!state.halted){
-            printresult(state);
+        while(!halted){
+            printState(state);
             executeInstruction(state);
         }
 
         IO.println("machine halted");
-        IO.println("total of " + state.countIntructions + " intructions executed");
-        IO.println("total of machine : ");
-        printresult(state);
+        IO.println("total of " + countIntruction + " instructions executed");
+        IO.println("final state of machine : ");
+        printState(state);
     }
 
-    private void ReadMachinecode(String filename, MachineState state) throws FileNotFoundException {
+    private void ReadMachinecode(String filename, stateStruct state) throws FileNotFoundException {
 
         Scanner scanner = new Scanner(new File(filename));
 
@@ -44,7 +48,7 @@ public class Simulator {
         scanner.close();
     }
 
-    public void printresult(MachineState state) {
+    public void printState(stateStruct state) {
         IO.println("");
         IO.println("@@@");
         IO.println("state:");
@@ -53,7 +57,7 @@ public class Simulator {
         for(int i = 0; i < state.numMemory; i++) {
             IO.println("        mem[ " + i + " ] " + state.memory[i]);
         }
-        IO.println("    register:");
+        IO.println("    registers:");
         for(int i = 0; i < state.register.length; i++) {
             IO.println("        reg[ " + i + " ] " + state.register[i]);
         }
@@ -62,30 +66,30 @@ public class Simulator {
 
     //แยกบิต
     // bit 24-22
-    private int getOpcode(MachineState state) {
+    private int getOpcode(stateStruct state) {
         int count = state.pc;
         return (state.memory[count] >> 22) & 7;
     }
 
     // bit 21-19
-    private int getregA(MachineState state) {
+    private int getregA(stateStruct state) {
         int count = state.pc;
         return (state.memory[count] >> 19 ) & 7;
     }
 
     // bit 18-16
-    private int getregB(MachineState state) {
+    private int getregB(stateStruct state) {
         int count = state.pc;
         return (state.memory[count] >> 16 ) & 7;
     }
 
     // bit 2-0
-    private int getdestReg(MachineState state) {
+    private int getdestReg(stateStruct state) {
         return state.memory[state.pc] & 7;
     }
 
     //bit 15 - 0
-    private int getoffset(MachineState state) {
+    private int getoffset(stateStruct state) {
         int count = state.pc;
         int num =  state.memory[count] & 0xFFFF;
         return convertNum(num);
@@ -100,8 +104,8 @@ public class Simulator {
     }
 
     //ประมวลผล
-    private void executeInstruction(MachineState state){
-        state.countIntructions++;
+    private void executeInstruction(stateStruct state){
+        countIntruction++;
 
         int opcode = getOpcode(state);
         int A = getregA(state);
@@ -142,7 +146,7 @@ public class Simulator {
                 break;
             case 6 : // halt
                 state.pc++;
-                state.halted = true;
+                halted = true;
                 break;
             case 7 : //noop
                 state.pc++;
