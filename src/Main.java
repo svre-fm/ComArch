@@ -3,10 +3,9 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.List;
+import lexer.AssemblyLine;
 import lexer.Lexer;
 import lexer.LexicalException;
-import lexer.Token;
-import lexer.TokenType;
 
 public class Main {
     public static void main(String[] args) throws IOException {
@@ -19,30 +18,23 @@ public class Main {
 
         String src = Files.readString(Path.of(path));
         Lexer lexer = new Lexer(src);
+        List<AssemblyLine> lines = lexer.tokenize();
 
-        try {
-            List<Token> tokens = lexer.tokenize();
-            int count = 0;
-            for (Token t : tokens) {
-                if (t.getType() == TokenType.NEWLINE) continue;
-                String line = t.toString();
-                output.append(line).append("\n");
-                System.out.println(line);
-                count++;
-            }
-            String total = "total: " + count + " tokens (not NEWLINE/EOF)";
-            output.append(total).append("\n");
+        System.out.println("ต้องการ list token ตัวแรก");
+        System.out.println(lines.get(0));
+        System.out.println("************************");
+
+        System.out.println("ต้องการ list token ตัวแรก");
+        System.out.println(lines.get(0).getInstruction() + " " + lines.get(0).getField0() + " " + lines.get(0).getField1() + " " + lines.get(0).getField2() );
+        System.out.println("************************");
 
 
-            System.out.println(total);
-        } catch (LexicalException e) {
-            String message = e.getMessage();
-            output.append(message).append("\n");
-            System.err.println(message);
-        }
+//        สำหรับให้แสดงทุก token ใน list
+//        for (AssemblyLine line : lines) {
+//            String text = line.toString();
+//            System.out.println(text + "\n");
+//        }
+        
 
-        Path outputFile = Path.of("output.txt");
-        Files.writeString(outputFile, output.toString());
-        System.out.println("Saved output to: " + outputFile.toAbsolutePath());
     }
 }

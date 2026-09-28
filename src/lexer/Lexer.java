@@ -31,31 +31,26 @@ public class Lexer {
         this.column = 1;
     }
 
-    public List<Token> tokenize(){
-        List<Token> tokens = new ArrayList<>();
+    public List<AssemblyLine> tokenize() {
+        List<AssemblyLine> lines = new ArrayList<>();
         List<Token> lineBuffer = new ArrayList<>();
 
-        while (true){
+        while (true) {
             Token raw = scanRawToken();
-            if(raw.getType() == TokenType.NEWLINE){
-                if(!lineBuffer.isEmpty()){
-                    classifyLine(lineBuffer,tokens);
-                    tokens.add(raw);
+            TokenType type = raw.getType();
+
+            if (type == TokenType.NEWLINE || type == TokenType.EOF) {
+                if (!lineBuffer.isEmpty()) {
+                    lines.add(classifyLine(lineBuffer));
+                    lineBuffer.clear();
                 }
-                lineBuffer.clear();
+                if (type == TokenType.EOF) break;
                 continue;
             }
-            if (raw.getType() == TokenType.EOF){
-                if (!lineBuffer.isEmpty()){
-                    classifyLine(lineBuffer,tokens);
-                    tokens.add(new Token(TokenType.NEWLINE,"\n", raw.getLine(), raw.getColumn()));
-                }
-                tokens.add(raw);
-                break;
-            }
+
             lineBuffer.add(raw);
         }
-        return tokens;
+        return lines;
     }
 
     private Token scanRawToken(){
@@ -159,10 +154,10 @@ public class Lexer {
         }
     }
 
-    private void classifyLine(List<Token> lineBuffer,List<Token> output){
+    private AssemblyLine classifyLine(List<Token> lineBuffer){
         int idx = 0;
-        int fieldCount = 0;
         Token current = lineBuffer.get(idx);
+        int lineNumber = current.getLine();
 
         boolean isDirective = false,isMnemonic = false;
         if(current.getType() == TokenType.DIRECTIVE)
@@ -170,55 +165,111 @@ public class Lexer {
         if(current.getType() == TokenType.MNEMONIC && OPCODE.containsKey(current.getLexeme().toUpperCase()))
             isMnemonic = true;
 
-        //first word isn't instruction or .fill -> label
+        String label = "";
         if(!isDirective && !isMnemonic){
             validLabel(current);
-            output.add(new Token(TokenType.LABEL,current.getLexeme(),current.getLine(),current.getColumn()));
+            label = current.getLexeme();
             idx++;
 
             if(idx >= lineBuffer.size()){
                 throw new LexicalException("have label but don't have instruction",current.getLine(),current.getColumn());
             }
+
             current = lineBuffer.get(idx);
             if(current.getType() == TokenType.DIRECTIVE)
                 isDirective = true;
             if(current.getType() == TokenType.MNEMONIC && OPCODE.containsKey(current.getLexeme().toUpperCase()))
                 isMnemonic = true;
         }
-
-        if (isDirective){
-            output.add(new Token(TokenType.DIRECTIVE,".fill",current.getLine(),current.getColumn()));
+        String instruction;
+        int fieldCount;
+        if(isDirective){
+            instruction = ".fill";
             fieldCount = 1;
-        }else if ( isMnemonic ){
-            output.add(new Token(TokenType.MNEMONIC,current.getLexeme(),current.getLine(),current.getColumn()));
-            fieldCount = OPCODE.get(current.getLexeme().toUpperCase());
+        }else if (isMnemonic){
+            instruction = current.getLexeme().toUpperCase();
+            fieldCount = OPCODE.get(instruction);
+        }else {
+            throw new LexicalException("unknow instruction or directive " + current.getLexeme() ,current.getLine(),current.getColumn());
         }
         idx++;
 
-        for (int f = 0; f < fieldCount; f++) {
-            if (idx >= lineBuffer.size()) {
-                throw new LexicalException(
-                        "instruction need " + fieldCount + " field but not provided", current.getLine(), current.getColumn()
-                );
+        String[] fields = {"","",""};
+        for (int f = 0;f < fieldCount;f++){
+            if (idx >= lineBuffer.size()){
+                throw new LexicalException("instruction need " + fieldCount + " field but not provided", current.getLine(), current.getColumn());
             }
             Token fieldTok = lineBuffer.get(idx);
-            if (fieldTok.getType() == TokenType.NUMBER) {
-                output.add(fieldTok);
-            } else {
+            if (fieldTok.getType() != TokenType.NUMBER){
                 validLabel(fieldTok);
-                output.add(new Token(TokenType.IDENTIFIER, fieldTok.getLexeme(), fieldTok.getLine(), fieldTok.getColumn()));
             }
+            fields[f] = fieldTok.getLexeme();
             idx++;
         }
-        //have some token left it should be comment.
-        if ( idx < lineBuffer.size()){
-            Token leftOver = lineBuffer.get(idx);
-            StringBuilder comment = new StringBuilder();
-            for(int c = idx ; c < lineBuffer.size();c++){
-                if(c > idx) comment.append(' ');
-                comment.append(lineBuffer.get(c).getLexeme());
-            }
-            output.add(new Token(TokenType.COMMENT,comment.toString(),leftOver.getLine(),leftOver.getColumn()));
-        }
+    return new AssemblyLine(lineNumber,label,instruction,fields[0],fields[1],fields[2]);
     }
+
+// old version that will return each token -> \n cant use in assembly.
+//    private void classifyLine(List<Token> lineBuffer,List<Token> output){
+//        int idx = 0;
+//        int fieldCount = 0;
+//        Token current = lineBuffer.get(idx);
+//
+//        boolean isDirective = false,isMnemonic = false;
+//        if(current.getType() == TokenType.DIRECTIVE)
+//            isDirective = true;
+//        if(current.getType() == TokenType.MNEMONIC && OPCODE.containsKey(current.getLexeme().toUpperCase()))
+//            isMnemonic = true;
+//
+//        //first word isn't instruction or .fill -> label
+//        if(!isDirective && !isMnemonic){
+//            validLabel(current);
+//            output.add(new Token(TokenType.LABEL,current.getLexeme(),current.getLine(),current.getColumn()));
+//            idx++;
+//
+//            if(idx >= lineBuffer.size()){
+//                throw new LexicalException("have label but don't have instruction",current.getLine(),current.getColumn());
+//            }
+//            current = lineBuffer.get(idx);
+//            if(current.getType() == TokenType.DIRECTIVE)
+//                isDirective = true;
+//            if(current.getType() == TokenType.MNEMONIC && OPCODE.containsKey(current.getLexeme().toUpperCase()))
+//                isMnemonic = true;
+//        }
+//
+//        if (isDirective){
+//            output.add(new Token(TokenType.DIRECTIVE,".fill",current.getLine(),current.getColumn()));
+//            fieldCount = 1;
+//        }else if ( isMnemonic ){
+//            output.add(new Token(TokenType.MNEMONIC,current.getLexeme(),current.getLine(),current.getColumn()));
+//            fieldCount = OPCODE.get(current.getLexeme().toUpperCase());
+//        }
+//        idx++;
+//
+//        for (int f = 0; f < fieldCount; f++) {
+//            if (idx >= lineBuffer.size()) {
+//                throw new LexicalException(
+//                        "instruction need " + fieldCount + " field but not provided", current.getLine(), current.getColumn()
+//                );
+//            }
+//            Token fieldTok = lineBuffer.get(idx);
+//            if (fieldTok.getType() == TokenType.NUMBER) {
+//                output.add(fieldTok);
+//            } else {
+//                validLabel(fieldTok);
+//                output.add(new Token(TokenType.IDENTIFIER, fieldTok.getLexeme(), fieldTok.getLine(), fieldTok.getColumn()));
+//            }
+//            idx++;
+//        }
+//        //have some token left it should be comment.
+//        if ( idx < lineBuffer.size()){
+//            Token leftOver = lineBuffer.get(idx);
+//            StringBuilder comment = new StringBuilder();
+//            for(int c = idx ; c < lineBuffer.size();c++){
+//                if(c > idx) comment.append(' ');
+//                comment.append(lineBuffer.get(c).getLexeme());
+//            }
+//            output.add(new Token(TokenType.COMMENT,comment.toString(),leftOver.getLine(),leftOver.getColumn()));
+//        }
+//    }
 }
