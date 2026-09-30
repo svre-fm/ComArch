@@ -1,5 +1,6 @@
 package lexer;
 
+
 public final class AssemblyLine {
     private final int lineNumber;
     private final String label;
@@ -29,7 +30,10 @@ public final class AssemblyLine {
 
     @Override
     public String toString() {
-        return String.format("line %-2d [%s]\t[%s]\t[%s]\t[%s]\t[%s]",
-                lineNumber, label, instruction, field0, field1, field2);
+        return String.format("[%s]\t[%s]\t[%s]\t[%s]",
+                 instruction, field0, field1, field2);
     }
+
+
+    
 }
