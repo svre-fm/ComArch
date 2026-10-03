@@ -13,7 +13,7 @@ public class Main {
         program.add(List.of("halt"));
         encoder.encodeAll(program);
 
-       List token = Arrays.asList("add", "1", "2", "1");
+       List token = Arrays.asList(".fill", "32768");
         System.out.println(encoder.encode(token));
     }
 }
