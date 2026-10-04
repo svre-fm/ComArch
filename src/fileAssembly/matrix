@@ -1,0 +1,36 @@
+lw	0	1	a00
+	lw	0	2	b00
+	add	1	2	3
+	sw	0	3	c00
+
+	lw	0	1	a01
+	lw	0	2	b01
+	add	1	2	3
+	sw	0	3	c01
+
+	lw	0	1	a10
+	lw	0	2	b10
+	add	1	2	3
+	sw	0	3	c10
+
+	lw	0	1	a11
+	lw	0	2	b11
+	add	1	2	3
+	sw	0	3	c11
+
+	halt
+
+a00	.fill	1
+a01	.fill	2
+a10	.fill	3
+a11	.fill	4
+
+b00	.fill	5
+b01	.fill	6
+b10	.fill	7
+b11	.fill	8
+
+c00	.fill	0
+c01	.fill	0
+c10	.fill	0
+c11	.fill	0
