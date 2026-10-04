@@ -18,6 +18,7 @@ public class TokenToMachine {
             Files.write(Paths.get("MachineCode.txt"), machineCodes);
         }catch(Exception e) {
             System.err.println("Incorrect Token at Line" + " " + saveLine);
+            System.exit(1);
         }
     }
 
