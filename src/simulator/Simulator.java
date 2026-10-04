@@ -5,34 +5,47 @@ import java.io.FileNotFoundException;
 import java.util.Scanner;
 
 public class Simulator {
-
+    //set up ค่าเริ่มต้นของ Simulator
     private boolean halted = false;
-    private int countIntruction = 0;
+    private int countIntructions = 0;
+    final int MAX_INSTRUCTIONS = 500000;
 
+    //function สำหรับแสดงผลการทำงานของ Simulator
     public void run(String filename, stateStruct state) {
-
+        //ทดสอบการอ่านไฟล์
         try {
             ReadMachinecode(filename,state);
         } catch (FileNotFoundException e) {
             throw new RuntimeException(e);
         }
 
+        // แสดงผลค่า Machine code ในแต่ละ memory
         for (int i = 0; i < state.numMemory; i++) {
             IO.println("memory[" + i + "] = " + state.memory[i]);
         }
         IO.println();
 
+        //ลูปการทำงานของ Simulator
         while(!halted){
+            if (countIntructions > MAX_INSTRUCTIONS) {
+                System.out.println("error: program did not halt within " + MAX_INSTRUCTIONS + " instructions (possible infinite loop)");
+                System.exit(1);
+            }
+
+            checkMemoryBounds(state.pc, state);
+
             printState(state);
             executeInstruction(state);
         }
 
+        //แสดงผลลัพธ์การทำงานของ Simulator
         IO.println("machine halted");
-        IO.println("total of " + countIntruction + " instructions executed");
+        IO.println("total of " + countIntructions + " instructions executed");
         IO.println("final state of machine : ");
         printState(state);
     }
 
+    //function  การอ่านไฟล์ Machine code
     private void ReadMachinecode(String filename, stateStruct state) throws FileNotFoundException {
 
         Scanner scanner = new Scanner(new File(filename));
@@ -48,6 +61,7 @@ public class Simulator {
         scanner.close();
     }
 
+    //function printState ตาม workspace
     private void printState(stateStruct state) {
         IO.println("");
         IO.println("@@@");
@@ -64,7 +78,8 @@ public class Simulator {
         IO.println("end state");
     }
 
-    //แยกบิต
+    //Decode Machine code มาเป็น Opcode, field 0,field 1, field2
+
     // bit 24-22
     private int getOpcode(stateStruct state) {
         int count = state.pc;
@@ -103,10 +118,9 @@ public class Simulator {
         return num;
     }
 
-    //ประมวลผล
+    //ประมวลผล Instructions
     private void executeInstruction(stateStruct state){
-        countIntruction++;
-
+        countIntructions++;
         int opcode = getOpcode(state);
         int A = getregA(state);
         int B = getregB(state);
@@ -163,4 +177,13 @@ public class Simulator {
                 break;
         }
     }
+
+    // check ขอบเขต address
+    private void checkMemoryBounds(int address, stateStruct state) {
+        if (address < 0 || address >= state.numMemory) {
+            System.out.println("error: memory address out of bounds: " + address);
+            System.exit(1);
+        }
+    }
+
 }

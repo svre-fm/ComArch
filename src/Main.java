@@ -1,12 +1,34 @@
-import simulator.stateStruct;
+import TokenToMachine.TokenToMachine;
+import lexer.Execute;
 import simulator.Simulator;
+import simulator.stateStruct;
 
-//TIP To <b>Run</b> code, press <shortcut actionId="Run"/> or
-// click the <icon src="AllIcons.Actions.Execute"/> icon in the gutter.
+public boolean runAssembly(String filename) {
+    Execute execute = new Execute();
+    TokenToMachine encoder = new TokenToMachine();
+    List<List<String>> program = new ArrayList<>();
+
+    try {
+        program = execute.runOn(filename);
+        encoder.encodeAll(program);
+        return true;
+    }catch (Exception e){
+        IO.println("Error: " + e.getMessage());
+        return false;
+    }
+
+
+}
+
 void main() {
-    stateStruct state = new stateStruct();
     Simulator simulator = new Simulator();
+    stateStruct state = new stateStruct();
 
-    simulator.run("src/machine_code/test", state);
+    boolean assembleSuccess = runAssembly("src/fileAssembly/combination");
 
+    if (!assembleSuccess) {
+        System.exit(1);
+    }
+
+    simulator.run("MachineCode.txt",state);
 }
