@@ -1,19 +1,16 @@
-import java.io.IOException;
-import java.util.Arrays;
 import java.util.List;
 import java.util.ArrayList;
 
 public class Main {
-    public static void main(String[] args) throws IOException {
+    public static void main() {
         TokenToMachine encoder = new TokenToMachine();
 
         List<List<String>> program = new ArrayList<>();
         program.add(List.of("add", "1", "2", "1"));
-        program.add(List.of("lw", "1", "2", "3"));
+        program.add(List.of("lw", "1", "2", "555"));
         program.add(List.of("halt"));
+        program.add(List.of("noop"));
         encoder.encodeAll(program);
 
-       List token = Arrays.asList(".fill", "32768");
-        System.out.println(encoder.encode(token));
     }
 }

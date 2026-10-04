@@ -1,23 +1,27 @@
 import java.util.List;
-import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 
 public class TokenToMachine {
 
-    public void encodeAll(List<List<String>> program) throws IOException {
+    public void encodeAll(List<List<String>> program) {
         List<String> machineCodes = new ArrayList<>();
+        int saveLine = 0;
 
-        for (List<String> line : program) {
-            String code = encode(line);
-            machineCodes.add(code);
+        try {
+            for (List<String> line : program) {
+                saveLine++;
+                String code = encode(line);
+                machineCodes.add(code);
+            }
+            Files.write(Paths.get("MachineCode.txt"), machineCodes);
+        }catch(Exception e) {
+            System.err.println("Incorrect Token at Line" + " " + saveLine);
         }
-
-        Files.write(Paths.get("MachineCode.txt"), machineCodes);
     }
 
-    public String encode(List<String> tokens) {
+    private String encode(List<String> tokens) {
         if (tokens == null || tokens.isEmpty()) return null;
 
         String mnemonic = tokens.get(0).toLowerCase();
@@ -90,7 +94,6 @@ public class TokenToMachine {
     }
 
     private String encodeFill(List<String> tokens) {
-        validateOffset(parseNumber(tokens.get(1)));
         return String.valueOf(parseNumber(tokens.get(1)));
     }
 
