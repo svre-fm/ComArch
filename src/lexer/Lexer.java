@@ -3,10 +3,10 @@ package lexer;
 import java.util.*;
 
 public class Lexer {
-     /* R-type (add, nand)  : regA regB destReg     -> 3 fields
-     * I-type (lw, sw, beq): regA regB offsetField -> 3 fields
-     * J-type (jalr)       : regA regB             -> 2 fields
-     * O-type (halt, noop) : ไม่มี field             -> 0 fields
+     /* R-type (add, nand) : regA regB destReg      -> 3 fields
+     * I-type (lw, sw, beq): regA regB offsetField  -> 3 fields
+     * J-type (jalr)       : regA regB              -> 2 fields
+     * O-type (halt, noop) : no field               -> 0 fields
      */
     private static final Map<String, Integer> OPCODE = new TreeMap<>(Map.of(
             "ADD", 3,
@@ -34,7 +34,6 @@ public class Lexer {
     public List<AssemblyLine> tokenize() {
         List<AssemblyLine> lines = new ArrayList<>();
         List<Token> lineBuffer = new ArrayList<>();
-
         while (true) {
             Token raw = scanRawToken();
             TokenType type = raw.getType();
@@ -42,12 +41,16 @@ public class Lexer {
             if (type == TokenType.NEWLINE || type == TokenType.EOF) {
                 if (!lineBuffer.isEmpty()) {
                     lines.add(classifyLine(lineBuffer));
+                    //comment is removed by .clear() below, classifyLine() read only necessary filed
+                    //check by filed count
                     lineBuffer.clear();
                 }
                 if (type == TokenType.EOF) break;
+                //type == TokenType.NEWLINE skip to next loop
                 continue;
             }
-
+            //show each raw token
+            System.out.println(raw);
             lineBuffer.add(raw);
         }
         return lines;
@@ -66,7 +69,6 @@ public class Lexer {
         }
         return scanBlob();
     }
-
 
     private void skipWhitespaceAndComments(){
         while (!isAtEnd()){
@@ -94,8 +96,9 @@ public class Lexer {
         if (isNumberLiteral(word)) {
             return new Token(TokenType.NUMBER, word, startLine, startCol);
         }
-        return new Token(TokenType.IDENTIFIER,word,startLine,startCol);
+        return new Token(TokenType.LABEL,word,startLine,startCol);
     }
+
 
     private boolean isNumberLiteral(String word){
         int i = 0;
@@ -107,22 +110,27 @@ public class Lexer {
         return true;
     }
 
+    //tab ,enter \r,\n -> newline
     private boolean isBlobChar(char c) {
-        return c != ' ' && c != '\t' && c != '\r' && c != '\n';
+            return c != ' ' && c != '\t' && c != '\r' && c != '\n';
     }
 
+    //src.length is return amount of char in the string
     private boolean isAtEnd() {
         return pos >= src.length();
     }
 
+    //look at position
     private char peek() {
         return isAtEnd() ? '\0' : src.charAt(pos);
     }
 
+    //not used in this scope
     private char peekNext() {
         return (pos + 1 >= src.length()) ? '\0' : src.charAt(pos + 1);
     }
 
+    //update next line use for list<token> is success
     private char advance() {
         char c = src.charAt(pos);
         pos++;
@@ -165,6 +173,7 @@ public class Lexer {
         if(current.getType() == TokenType.MNEMONIC && OPCODE.containsKey(current.getLexeme().toUpperCase()))
             isMnemonic = true;
 
+        //if it not isDirective && isMnemonic ,it has to be 'label'
         String label = "";
         if(!isDirective && !isMnemonic){
             validLabel(current);
@@ -181,6 +190,8 @@ public class Lexer {
             if(current.getType() == TokenType.MNEMONIC && OPCODE.containsKey(current.getLexeme().toUpperCase()))
                 isMnemonic = true;
         }
+
+
         String instruction;
         int fieldCount;
         if(isDirective){

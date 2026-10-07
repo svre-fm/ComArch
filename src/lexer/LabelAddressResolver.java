@@ -18,15 +18,16 @@ public final class LabelAddressResolver {
             String field2 = line.getField2();
 
             switch (line.getInstruction().toUpperCase(Locale.ROOT)) {
-                case "LW", "SW" -> field2 = resolveValue(field2, symbolTable, address, false, line);
-                case "BEQ" -> field2 = resolveValue(field2, symbolTable, address, true, line);
-                case ".FILL" -> field0 = resolveValue(field0, symbolTable, address, false, line);
+                case "LW", "SW" -> field2 = resolveOffset(field2, symbolTable, address, false, line);
+                case "BEQ" -> field2 = resolveOffset(field2, symbolTable, address, true, line);
+                case ".FILL" -> field0 = resolveOffset(field0, symbolTable, address, false, line);
                 default -> {
                 }
             }
 
             resolvedLines.add(new AssemblyLine(line.getLineNumber(), line.getLabel(),
                     line.getInstruction(), field0, field1, field2));
+            System.out.println(resolvedLines.get(address));
         }
 
         return resolvedLines;
@@ -40,7 +41,7 @@ public final class LabelAddressResolver {
                 continue;
             }
 
-            String key = normalize(line.getLabel());
+            String key = line.getLabel().toLowerCase();
             if (symbolTable.putIfAbsent(key, address) != null) {
                 throw resolutionError(line, "duplicate label '" + line.getLabel() + "'");
             }
@@ -48,19 +49,24 @@ public final class LabelAddressResolver {
         return symbolTable;
     }
 
-    private String resolveValue(String text, Map<String, Integer> symbolTable,
+    private String resolveOffset(String text, Map<String, Integer> symbolTable,
                                 int currentAddress, boolean relative, AssemblyLine line) {
         if (isInteger(text)) {
             return text;
         }
 
-        Integer labelAddress = symbolTable.get(normalize(text));
+        Integer labelAddress = symbolTable.get(text.toLowerCase());
         if (labelAddress == null) {
             throw resolutionError(line, "undefined label '" + text + "'");
         }
 
-        int value = relative ? labelAddress - (currentAddress + 1) : labelAddress;
-        return Integer.toString(value);
+        int Offset;
+        if(relative){
+            Offset =labelAddress - (currentAddress + 1);
+        }else {
+            Offset = labelAddress;
+        }
+        return Integer.toString(Offset);
     }
 
     private boolean isInteger(String text) {
@@ -78,10 +84,6 @@ public final class LabelAddressResolver {
             }
         }
         return true;
-    }
-
-    private String normalize(String label) {
-        return label.toLowerCase(Locale.ROOT);
     }
 
     private IllegalArgumentException resolutionError(AssemblyLine line, String message) {

@@ -17,15 +17,15 @@ public class Execute {
         for (AssemblyLine line : resolvedLines) {
             List<String> tokens = new ArrayList<>();
             tokens.add(line.getInstruction());
-            addIfPresent(tokens, line.getField0());
-            addIfPresent(tokens, line.getField1());
-            addIfPresent(tokens, line.getField2());
+            addToken(tokens, line.getField0());
+            addToken(tokens, line.getField1());
+            addToken(tokens, line.getField2());
             program.add(tokens);
         }
         return program;
     }
 
-    private static void addIfPresent(List<String> tokens, String field) {
+    private static void addToken(List<String> tokens, String field) {
         if (!field.isEmpty()) {
             tokens.add(field);
         }
