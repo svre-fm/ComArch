@@ -24,7 +24,7 @@ void main() {
     Simulator simulator = new Simulator();
     stateStruct state = new stateStruct();
 
-    boolean assembleSuccess = runAssembly("src/fileAssembly/combination");
+    boolean assembleSuccess = runAssembly("src/fileAssembly/multiplication");
 
     if (!assembleSuccess) {
         System.exit(1);
