@@ -1,43 +1,58 @@
-           lw          0           6           pos1
-            lw          0           7           neg1
-            lw          0           5           stkAdr
-            lw          0           1           n
-            lw          0           2           r
-            lw          0           3           cmbAdr
-            jalr        3           4
-            halt
-comb        beq         2           0           base
-            beq         1           2           base
-            sw          5           4           0
-            add         5           6           5
-            sw          5           1           0
-            add         5           6           5
-            sw          5           2           0
-            add         5           6           5
-            add         1           7           1
-            lw          0           3           cmbAdr
-            jalr        3           4
-            sw          5           3           0
-            add         5           6           5
-            lw          5           1           -3
-            add         1           7           1
-            lw          5           2           -2
-            add         2           7           2
-            lw          0           3           cmbAdr
-            jalr        3           4
-            lw          5           1           -1
-            add         3           1           3
-            lw          5           4           -4
-            lw          0           1           neg4
-            add         5           1           5
-            jalr        4           2
-base        lw          0           3           pos1
-            jalr        4           2
-pos1        .fill       1
-neg1        .fill       -1
-neg4        .fill       -4
-cmbAdr      .fill       comb
-stkAdr      .fill       stack
-n           .fill       7
-r           .fill       3
-stack       .fill       0
+lw          0           6           pos1        	    โหลดค่าคงที่ 1 เข้าสู่ Register 6
+            lw          0           7           neg1        โหลดค่าคงที่ -1 เข้าสู่ Register 7
+            lw          0           5           stkAdr      โหลดตำแหน่งเริ่มต้นของ Stack Pointer เข้าสู่ Register 5 ($5)
+            lw          0           1           n           โหลดค่าอินพุต n (7) เข้าสู่ Register 1
+            lw          0           2           r           โหลดค่าอินพุต r (3) เข้าสู่ Register 2
+            lw          0           3           cmbAdr      โหลดตำแหน่งฟังก์ชัน comb เข้าสู่ Register 3
+            jalr        3           4                       เรียกฟังก์ชัน comb (บันทึกตำแหน่งขากลับใน Register 4)
+            halt                                            หยุดการทำงานของโปรแกรม
+comb        beq         2           0           base        ตรวจสอบเงื่อนไข Base Case (กรณี r == 0)
+            beq         1           2           base        ตรวจสอบเงื่อนไข Base Case (กรณี n == r)
+            sw          5           4           0           บันทึกตำแหน่งขากลับ (Return Address) ลงใน Stack
+            add         5           6           5           เลื่อนตำแหน่ง Stack Pointer ขึ้น 1 ช่อง (SP = SP + 1)
+            sw          5           1           0           บันทึกค่า n ปัจจุบันลงใน Stack
+            add         5           6           5           เลื่อนตำแหน่ง Stack Pointer ขึ้น 1 ช่อง (SP = SP + 1)
+            sw          5           2           0           บันทึกค่า r ปัจจุบันลงใน Stack
+            add         5           6           5           เลื่อนตำแหน่ง Stack Pointer ขึ้น 1 ช่อง (SP = SP + 1)
+            add         1           7           1           คำนวณ n - 1 แล้วเก็บใน Register 1
+            lw          0           3           cmbAdr      โหลดตำแหน่งฟังก์ชัน comb เข้าสู่ Register 3
+            jalr        3           4                       เรียกคำนวณเวียนเกิดครั้งที่ 1: comb(n-1, r)
+            sw          5           3           0           บันทึกผลลัพธ์แรกที่ได้ลงใน Stack
+            add         5           6           5           เลื่อนตำแหน่ง Stack Pointer ขึ้น 1 ช่อง (SP = SP + 1)
+            lw          5           1           -3          ดึงค่า n ดั้งเดิมจาก Stack (ตำแหน่ง SP - 3) มาใช้งาน
+            add         1           7           1           คำนวณ n - 1 สำหรับการเรียกครั้งที่ 2
+            lw          5           2           -2          ดึงค่า r ดั้งเดิมจาก Stack (ตำแหน่ง SP - 2) มาใช้งาน
+            add         2           7           2           คำนวณ r - 1 สำหรับการเรียกครั้งที่ 2
+            lw          0           3           cmbAdr      โหลดตำแหน่งฟังก์ชัน comb เข้าสู่ Register 3
+            jalr        3           4                       เรียกคำนวณเวียนเกิดครั้งที่ 2: comb(n-1, r-1)
+            lw          5           1           -1          ดึงผลลัพธ์จากการเรียกครั้งแรกขึ้นมาจาก Stack
+            add         3           1           3           รวมผลลัพธ์ทั้งสองฝั่งเข้าด้วยกัน (Result = Result1 + Result2)
+            lw          5           4           -4          ดึงตำแหน่งขากลับดั้งเดิมคืนเข้าสู่ Register 4
+            lw          0           1           neg4        โหลดค่าคงที่ -4 เข้าสู่ Register 1
+            add         5           1           5           คืนพื้นที่ Stack รวบยอด 4 ช่อง (SP = SP - 4)
+            jalr        4           2                       กระโดดกลับไปยังตำแหน่งขากลับที่เรียกมา
+base        lw          0           3           pos1        กำหนดผลลัพธ์ใน Register 3 เท่ากับ 1 (Base Case)
+            jalr        4           2                       กระโดดกลับไปยังตำแหน่งขากลับที่เรียกมา
+pos1        .fill       1                                   ข้อมูลค่าคงที่ 1
+neg1        .fill       -1                                  ข้อมูลค่าคงที่ -1
+neg4        .fill       -4                                  ข้อมูลค่าคงที่ -4
+cmbAdr      .fill       comb                                บันทึกตำแหน่ง Memory Address ของฟังก์ชัน comb
+stkAdr      .fill       stack                               บันทึกตำแหน่ง Memory Address จุดเริ่มต้นของ Stack
+n           .fill       7                                   กำหนดค่าอินพุต n = 7
+r           .fill       3                                   กำหนดค่าอินพุต r = 3
+stack       .fill       0                                   จุดเริ่มต้นพื้นที่ Stack Memory
+            .fill       0                                   สำรองพื้นที่ Stack
+            .fill       0                                   สำรองพื้นที่ Stack
+            .fill       0                                   สำรองพื้นที่ Stack
+            .fill       0                                   สำรองพื้นที่ Stack
+            .fill       0                                   สำรองพื้นที่ Stack
+            .fill       0                                   สำรองพื้นที่ Stack
+            .fill       0                                   สำรองพื้นที่ Stack
+            .fill       0                                   สำรองพื้นที่ Stack
+            .fill       0                                   สำรองพื้นที่ Stack
+            .fill       0                                   สำรองพื้นที่ Stack
+            .fill       0                                   สำรองพื้นที่ Stack
+            .fill       0                                   สำรองพื้นที่ Stack
+            .fill       0                                   สำรองพื้นที่ Stack
+            .fill       0                                   สำรองพื้นที่ Stack
+            .fill       0                                   สำรองพื้นที่ Stack

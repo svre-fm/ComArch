@@ -10,12 +10,12 @@ loop    beq	4	5	done
         add	1	2	1
 skip    add	2	2	2
         add	4	4	4
-        beq	0	0	loop
+        ber	0	0	loop //wromg instruction
 
 done	halt
 
 pos1	.fill	1
 limit	.fill	65536
 neg1	.fill	-1
-mcand	.fill	32766
+mcand	.fill	1042
 mplier	.fill	10383

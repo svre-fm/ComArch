@@ -1,0 +1,28 @@
+        lw      0   2   n2  //ทำการ load ขนาด Matrix
+        lw      0   6   one  //ทำการ load ค่า 1 
+        add     0   0   1   //ทำการรีเซ็ต Register 1 ให้เป็น 0
+loop    beq     1   2   done //ทำการเช็คว่าบวกจนครบทุกตัวรึยัง 
+        lw      1   3   matA //ทำการ load matrix A ตัวที่ n2 มาใส่ใน Register3
+        lw      1   4   matB //ทำการ load matrix B ตัวที่ n2 มาใส่ใน Register4
+        add     3   4   5  //ทำการบวกค่าใน Matrix A B ไปเก็บไว้ใน Register5 
+        sw      1   5   matC //ทำการเก็บค่าที่บวกใส่ใน Matrix C
+        add     1   6   1 //ทำการบวกตำแหน่งไป 1 
+        beq     0   0   loop //ทำการ loop
+done    halt //จบการทำงาน
+n2      .fill   9 //กำหนดขนาด Matrix
+one     .fill   1 //กำหนดค่า 1 ทำหรับเพิ่มจำนวนรอบ
+
+matA    .fill   7 //กำหนดค่าแต่ละตำแหน่งใน MatrixA
+        .fill   -3 
+        .fill   12
+        .fill   25
+
+matB    .fill   -5 //กำหนดค่าแต่ละตำแหน่งใน MatrixB
+        .fill   14
+        .fill   9
+        .fill   3
+
+matC    .fill   0 //กำหนดค่าแต่ละตำแหน่งใน MatrixC
+        .fill   0
+        .fill   0
+        .fill   0
