@@ -14,6 +14,12 @@ public class Execute {
         String src = Files.readString(Path.of(path));
         Lexer lexer = new Lexer(src);
         List<AssemblyLine> lines = lexer.tokenize();
+
+        //show line instruction form lexer
+        for (int i = 0;i < lines.size();i++){
+            System.out.println(lines.get(i));
+        }
+
         //resolve labels into addresses
         List<AssemblyLine> resolvedLines = new LabelAddressResolver().resolve(lines);
 
@@ -31,6 +37,7 @@ public class Execute {
         }
         return program;
     }
+
 
     //add field only if it is not empty
     private static void addToken(List<String> tokens, String field) {
