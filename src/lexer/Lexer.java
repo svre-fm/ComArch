@@ -51,7 +51,7 @@ public class Lexer {
                 //type == TokenType.NEWLINE skip to next loop
                 continue;
             }
-
+            IO.println(raw);
             lineBuffer.add(raw);
         }
         return lines;
@@ -96,7 +96,6 @@ public class Lexer {
         if (word.equalsIgnoreCase(".fill")) {
             return new Token(TokenType.DIRECTIVE, ".fill", startLine, startCol);
         }
-
         //if word is in opcode instruction
         if (OPCODE.containsKey(word.toUpperCase())) {
             return new Token(TokenType.MNEMONIC, word, startLine, startCol);
