@@ -133,11 +133,6 @@ public class Lexer {
         return isAtEnd() ? '\0' : src.charAt(pos);
     }
 
-    //not use in this scope
-    private char peekNext() {
-        return (pos + 1 >= src.length()) ? '\0' : src.charAt(pos + 1);
-    }
-
     //update next line use for list<token> is success
     private char advance() {
         char c = src.charAt(pos);
@@ -205,6 +200,7 @@ public class Lexer {
             if(current.getType() == TokenType.MNEMONIC && OPCODE.containsKey(current.getLexeme().toUpperCase()))
                 isMnemonic = true;
         }
+
         String instruction;
         int fieldCount;
         if(isDirective){
